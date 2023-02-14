@@ -487,8 +487,8 @@ function onBeforeInput(event: InputEvent, editor: LexicalEditor): void {
             selection.style = anchorNode.getStyle();
           }
         } else {
-          event.preventDefault();
-          dispatchCommand(editor, DELETE_CHARACTER_COMMAND, true);
+          //event.preventDefault();
+          //dispatchCommand(editor, DELETE_CHARACTER_COMMAND, true);
         }
         return;
       }
