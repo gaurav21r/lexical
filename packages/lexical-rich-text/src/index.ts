@@ -27,7 +27,7 @@ import type {
 
 import {
   $insertDataTransferForRichText,
-  copyToClipboard__EXPERIMENTAL,
+  copyToClipboard,
 } from '@lexical/clipboard';
 import {
   $moveCharacter,
@@ -86,7 +86,12 @@ import {
   REMOVE_TEXT_COMMAND,
 } from 'lexical';
 import caretFromPoint from 'shared/caretFromPoint';
-import {CAN_USE_BEFORE_INPUT, IS_IOS, IS_SAFARI} from 'shared/environment';
+import {
+  CAN_USE_BEFORE_INPUT,
+  IS_APPLE_WEBKIT,
+  IS_IOS,
+  IS_SAFARI,
+} from 'shared/environment';
 
 export type SerializedHeadingNode = Spread<
   {
@@ -397,10 +402,7 @@ async function onCutForRichText(
   event: CommandPayloadType<typeof CUT_COMMAND>,
   editor: LexicalEditor,
 ): Promise<void> {
-  await copyToClipboard__EXPERIMENTAL(
-    editor,
-    event instanceof ClipboardEvent ? event : null,
-  );
+  await copyToClipboard(editor, event instanceof ClipboardEvent ? event : null);
   editor.update(() => {
     const selection = $getSelection();
     if ($isRangeSelection(selection)) {
@@ -850,7 +852,10 @@ export function registerRichText(editor: LexicalEditor): () => void {
           // This can also cause a strange performance issue in
           // Safari, where there is a noticeable pause due to
           // preventing the key down of enter.
-          if ((IS_IOS || IS_SAFARI) && CAN_USE_BEFORE_INPUT) {
+          if (
+            (IS_IOS || IS_SAFARI || IS_APPLE_WEBKIT) &&
+            CAN_USE_BEFORE_INPUT
+          ) {
             return false;
           }
           event.preventDefault();
@@ -953,10 +958,7 @@ export function registerRichText(editor: LexicalEditor): () => void {
     editor.registerCommand(
       COPY_COMMAND,
       (event) => {
-        copyToClipboard__EXPERIMENTAL(
-          editor,
-          event instanceof ClipboardEvent ? event : null,
-        );
+        copyToClipboard(editor, event instanceof ClipboardEvent ? event : null);
         return true;
       },
       COMMAND_PRIORITY_EDITOR,

@@ -30,7 +30,7 @@ import type {RootNode} from './nodes/LexicalRootNode';
 import type {TextFormatType, TextNode} from './nodes/LexicalTextNode';
 
 import {CAN_USE_DOM} from 'shared/canUseDOM';
-import {IS_APPLE, IS_IOS, IS_SAFARI} from 'shared/environment';
+import {IS_APPLE, IS_APPLE_WEBKIT, IS_IOS, IS_SAFARI} from 'shared/environment';
 import invariant from 'shared/invariant';
 
 import {
@@ -653,7 +653,7 @@ export function $updateTextNodeFromDOMContent(
     if (compositionEnd || normalizedTextContent !== prevTextContent) {
       if (normalizedTextContent === '') {
         $setCompositionKey(null);
-        if (!IS_SAFARI && !IS_IOS) {
+        if (!IS_SAFARI && !IS_IOS && !IS_APPLE_WEBKIT) {
           // For composition (mainly Android), we have to remove the node on a later update
           const editor = getActiveEditor();
           setTimeout(() => {
@@ -1546,4 +1546,40 @@ export function $splitNode(
   const [leftTree, rightTree] = recurse(startNode);
 
   return [leftTree, rightTree];
+}
+
+export function $findMatchingParent(
+  startingNode: LexicalNode,
+  findFn: (node: LexicalNode) => boolean,
+): LexicalNode | null {
+  let curr: ElementNode | LexicalNode | null = startingNode;
+
+  while (curr !== $getRoot() && curr != null) {
+    if (findFn(curr)) {
+      return curr;
+    }
+
+    curr = curr.getParent();
+  }
+
+  return null;
+}
+
+export function $getChildrenRecursively(node: LexicalNode): Array<LexicalNode> {
+  const nodes = [];
+  const stack = [node];
+  while (stack.length > 0) {
+    const currentNode = stack.pop();
+    invariant(
+      currentNode !== undefined,
+      "Stack.length > 0; can't be undefined",
+    );
+    if ($isElementNode(currentNode)) {
+      stack.unshift(...currentNode.getChildren());
+    }
+    if (currentNode !== node) {
+      nodes.push(currentNode);
+    }
+  }
+  return nodes;
 }

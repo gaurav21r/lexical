@@ -712,15 +712,35 @@ export async function selectFromAlignDropdown(page, selector) {
   await click(page, '.dropdown ' + selector);
 }
 
-export async function insertTable(page) {
+export async function insertTable(page, rows = 2, columns = 3) {
+  let leftFrame = page;
+  if (IS_COLLAB) {
+    leftFrame = await page.frame('left');
+  }
   await selectFromInsertDropdown(page, '.item .table');
+  if (rows !== null) {
+    await leftFrame
+      .locator('input[data-test-id="table-modal-rows"]')
+      .fill(String(rows));
+  }
+  if (columns !== null) {
+    await leftFrame
+      .locator('input[data-test-id="table-modal-columns"]')
+      .fill(String(columns));
+  }
   await click(
     page,
     'div[data-test-id="table-model-confirm-insert"] > .Button__root',
   );
 }
 
-export async function selectCellsFromTableCords(page, firstCords, secondCords) {
+export async function selectCellsFromTableCords(
+  page,
+  firstCords,
+  secondCords,
+  isFirstHeader = false,
+  isSecondHeader = false,
+) {
   let leftFrame = page;
   if (IS_COLLAB) {
     await focusEditor(page);
@@ -728,21 +748,21 @@ export async function selectCellsFromTableCords(page, firstCords, secondCords) {
   }
 
   const firstRowFirstColumnCell = await leftFrame.locator(
-    `table:first-of-type > tr:nth-child(${firstCords.y + 1}) > th:nth-child(${
-      firstCords.x + 1
-    })`,
+    `table:first-of-type > tr:nth-child(${firstCords.y + 1}) > ${
+      isFirstHeader ? 'th' : 'td'
+    }:nth-child(${firstCords.x + 1})`,
   );
   const secondRowSecondCell = await leftFrame.locator(
-    `table:first-of-type > tr:nth-child(${secondCords.y + 1}) > td:nth-child(${
-      secondCords.x + 1
-    })`,
+    `table:first-of-type > tr:nth-child(${secondCords.y + 1}) > ${
+      isSecondHeader ? 'th' : 'td'
+    }:nth-child(${secondCords.x + 1})`,
   );
 
   // Focus on inside the iFrame or the boundingBox() below returns null.
   await firstRowFirstColumnCell.click(
     // This is a test runner quirk. Chrome seems to need two clicks to focus on the
     // content editable cell before dragging, but Firefox treats it as a double click event.
-    E2E_BROWSER !== 'firefox' ? {clickCount: 2} : {},
+    E2E_BROWSER === 'chromium' ? {clickCount: 2} : {},
   );
 
   await dragMouse(
@@ -750,6 +770,46 @@ export async function selectCellsFromTableCords(page, firstCords, secondCords) {
     await firstRowFirstColumnCell.boundingBox(),
     await secondRowSecondCell.boundingBox(),
   );
+}
+
+export async function insertTableRowAbove(page) {
+  await click(page, '.table-cell-action-button-container');
+  await click(page, '.item[data-test-id="table-insert-row-above"]');
+}
+
+export async function insertTableRowBelow(page) {
+  await click(page, '.table-cell-action-button-container');
+  await click(page, '.item[data-test-id="table-insert-row-below"]');
+}
+
+export async function insertTableColumnBefore(page) {
+  await click(page, '.table-cell-action-button-container');
+  await click(page, '.item[data-test-id="table-insert-column-before"]');
+}
+
+export async function insertTableColumnAfter(page) {
+  await click(page, '.table-cell-action-button-container');
+  await click(page, '.item[data-test-id="table-insert-column-after"]');
+}
+
+export async function mergeTableCells(page) {
+  await click(page, '.table-cell-action-button-container');
+  await click(page, '.item[data-test-id="table-merge-cells"]');
+}
+
+export async function deleteTableRows(page) {
+  await click(page, '.table-cell-action-button-container');
+  await click(page, '.item[data-test-id="table-delete-rows"]');
+}
+
+export async function deleteTableColumns(page) {
+  await click(page, '.table-cell-action-button-container');
+  await click(page, '.item[data-test-id="table-delete-columns"]');
+}
+
+export async function deleteTable(page) {
+  await click(page, '.table-cell-action-button-container');
+  await click(page, '.item[data-test-id="table-delete"]');
 }
 
 export async function enableCompositionKeyEvents(page) {

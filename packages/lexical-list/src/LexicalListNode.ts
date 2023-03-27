@@ -8,6 +8,7 @@
 
 import {
   addClassNamesToElement,
+  isHTMLElement,
   removeClassNamesFromElement,
 } from '@lexical/utils';
 import {
@@ -28,6 +29,7 @@ import {
 } from 'lexical';
 
 import {$createListItemNode, $isListItemNode, ListItemNode} from '.';
+import {updateChildrenListItemValue} from './formatList';
 import {$getListDepth, wrapInListItem} from './utils';
 
 export type SerializedListNode = Spread<
@@ -189,7 +191,7 @@ export class ListNode extends ElementNode {
         super.append(listItemNode);
       }
     }
-
+    updateChildrenListItemValue(this);
     return this;
   }
 
@@ -284,10 +286,12 @@ function convertListNode(domNode: Node): DOMConversionOutput {
   const nodeName = domNode.nodeName.toLowerCase();
   let node = null;
   if (nodeName === 'ol') {
-    node = $createListNode('number');
+    // @ts-ignore
+    const start = domNode.start;
+    node = $createListNode('number', start);
   } else if (nodeName === 'ul') {
     if (
-      domNode instanceof HTMLElement &&
+      isHTMLElement(domNode) &&
       domNode.getAttribute('__lexicallisttype') === 'check'
     ) {
       node = $createListNode('check');
@@ -307,10 +311,21 @@ const TAG_TO_LIST_TYPE: Record<string, ListType> = {
   ul: 'bullet',
 };
 
+/**
+ * Creates a ListNode of listType.
+ * @param listType - The type of list to be created. Can be 'number', 'bullet', or 'check'.
+ * @param start - Where an ordered list starts its count, start = 1 if left undefined.
+ * @returns The new ListNode
+ */
 export function $createListNode(listType: ListType, start = 1): ListNode {
   return $applyNodeReplacement(new ListNode(listType, start));
 }
 
+/**
+ * Checks to see if the node is a ListNode.
+ * @param node - The node to be checked.
+ * @returns true if the node is a ListNode, false otherwise.
+ */
 export function $isListNode(
   node: LexicalNode | null | undefined,
 ): node is ListNode {

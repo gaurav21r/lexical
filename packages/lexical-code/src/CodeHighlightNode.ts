@@ -6,21 +6,14 @@
  *
  */
 
-// eslint-disable-next-line simple-import-sort/imports
-import {
-  $applyNodeReplacement,
-  $isLineBreakNode,
-  type EditorConfig,
-  type EditorThemeClasses,
-  type LexicalNode,
-  type NodeKey,
-  type SerializedTextNode,
-  type Spread,
-  TextNode,
-  ElementNode,
+import type {
+  EditorConfig,
+  EditorThemeClasses,
+  LexicalNode,
+  NodeKey,
+  SerializedTextNode,
+  Spread,
 } from 'lexical';
-
-import * as Prism from 'prismjs';
 
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-javascript';
@@ -34,11 +27,21 @@ import 'prismjs/components/prism-python';
 import 'prismjs/components/prism-rust';
 import 'prismjs/components/prism-swift';
 import 'prismjs/components/prism-typescript';
+import 'prismjs/components/prism-java';
+import 'prismjs/components/prism-cpp';
 
 import {
   addClassNamesToElement,
   removeClassNamesFromElement,
 } from '@lexical/utils';
+import {
+  $applyNodeReplacement,
+  $isLineBreakNode,
+  ElementNode,
+  TextNode,
+} from 'lexical';
+import * as Prism from 'prismjs';
+
 import {$createCodeNode} from './CodeNode';
 
 export const DEFAULT_CODE_LANGUAGE = 'javascript';
@@ -55,8 +58,10 @@ type SerializedCodeHighlightNode = Spread<
 export const CODE_LANGUAGE_FRIENDLY_NAME_MAP: Record<string, string> = {
   c: 'C',
   clike: 'C-like',
+  cpp: 'C++',
   css: 'CSS',
   html: 'HTML',
+  java: 'Java',
   js: 'JavaScript',
   markdown: 'Markdown',
   objc: 'Objective-C',
@@ -70,6 +75,8 @@ export const CODE_LANGUAGE_FRIENDLY_NAME_MAP: Record<string, string> = {
 };
 
 export const CODE_LANGUAGE_MAP: Record<string, string> = {
+  cpp: 'cpp',
+  java: 'java',
   javascript: 'js',
   md: 'markdown',
   plaintext: 'plain',
